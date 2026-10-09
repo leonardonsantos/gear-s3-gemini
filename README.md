@@ -83,4 +83,21 @@ A Tizen web app (HTML/JS packaged as a `.wgt`) looked like a way around the miss
 
 **Verdict:** a web app does not get around the problem. Its core feature (microphone capture) is unproven, and it still depends on the Samsung watch certificate service, which is reported broken.
 
+### Signing blocks every alternative
+Every alternative still produces a package (`.tpk` or `.wgt`) that must install on a retail Gear S3. The watch only accepts packages signed with a **Samsung author certificate** and a **Samsung distributor certificate that includes the watch DUID**. So the broken certificate service blocks all of them, not just the native SDK path.
+
+| Alternative | Needs a Samsung watch certificate? |
+|---|---|
+| GUI Package Manager with an older snapshot | Yes. It only fixes the SDK install. |
+| Newer rootstrap with `api-version="4.0"` | Yes |
+| Linux VM or Docker with an older Tizen Studio | Yes. The failure looks server-side (TV certificates still work), so older Certificate Extension versions would probably fail too. Unverified. |
+| Tizen web app (JS) | Yes |
+
+**Possible exceptions:**
+- **Emulator:** it accepts the default Tizen certificates. That's useful for development, but it isn't the real watch.
+- **An existing Samsung distributor certificate:** a certificate issued before the breakage that already includes this watch's DUID would still work. We don't have one.
+- **A rooted or modified watch that skips signature checks:** we found no evidence of this for the Gear S3.
+
+**Conclusion:** the project's real blocker is signing, not the SDK. Fixing the SDK install alone would not make the project work.
+
 All local artifacts from these attempts (`~/tizen-studio`, `~/tizen-studio-data`, `~/.package-manager`, `~/tizen-mirror`) were removed.
