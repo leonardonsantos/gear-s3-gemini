@@ -100,4 +100,18 @@ Every alternative still produces a package (`.tpk` or `.wgt`) that must install 
 
 **Conclusion:** the project's real blocker is signing, not the SDK. Fixing the SDK install alone would not make the project work.
 
+## Other ways to reuse a Gear S3 (research, 2026-10-09)
+A short research pass, stopped early. It asked whether the watch can still run custom software without a new Samsung certificate. Items marked *unverified* were found but not confirmed.
+
+| Option | Status | Notes |
+|---|---|---|
+| Install **already Samsung-signed** apps from community backups (e.g. "Gear Browser 1.2.1", "G-Voice Assistant", "GAssistNet") with `sdb connect <ip>:26101` and `sdb install` | Possible | No new certificate is needed, because Samsung already signed these packages. They now come only from community backups, because the watch app store is closed. See the [XDA extraction thread](https://xdaforums.com/t/root-required-how-to-extract-gear-s3-watch-faces-and-apps-from-the-galaxy-store.4687851/). **Unverified:** whether Gear Browser can open a self-hosted page, and whether it can use the microphone. |
+| Some Galaxy Watch apps reportedly install on the Gear series "without any signing" | Unverified | Claimed in the same thread. It may only apply to packages Samsung already signed, not to custom ones. Details may be in the [no-root extraction thread](https://xdaforums.com/t/no-root-method-to-extract-and-backup-tizen-apps-for-samsung-galaxy-watch-active-2.4693807/) (not opened). |
+| Root via Samsung's leaked engineering ("combination") firmware for SM-R760, flashed with Odin/netOdin | Works but crippled | It gives a root shell (`sdb root on`). In this mode the watch "can't connect to a phone, all apps are disabled", so it's only useful for experiments. Many download links are dead. There is a risk of bricking the watch. See the [XDA root thread](https://xdaforums.com/t/gear-s3-root-and-kernel-source-android-wear-port-thread.3584588/). |
+| Use root to bypass signature checks | Dead | The XDA extraction thread (Aug 2024) says extracted apps need a Samsung platform-level certificate, and that a leaked platform certificate "is no longer valid on Tizen 4.0.0.7". Root alone doesn't make installing a custom app possible. |
+| Replace the OS (AsteroidOS, Wear OS 2 port) | Dead | [AsteroidOS](https://asteroidos.org/watches/) doesn't support the Gear S3. The [Wear OS 2 port thread](https://xdaforums.com/t/closed-rom-dev-wearos-2-for-gear-s3.4400757/) is closed, and the community Android Wear port never reported a booting build. |
+| Stock Bixby voice on the watch | Not researched | |
+
+**Most realistic next step (not attempted):** find a backup of Gear Browser, sideload it, and test whether it can load a self-hosted page that talks to Gemini.
+
 All local artifacts from these attempts (`~/tizen-studio`, `~/tizen-studio-data`, `~/.package-manager`, `~/tizen-mirror`) were removed.
