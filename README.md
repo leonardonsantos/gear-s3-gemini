@@ -29,4 +29,40 @@ Target: Tizen Studio + Wearable 4.0 Native + Samsung Wearable Extension + Samsun
 - Use a Linux x86_64 VM or Docker image with an older Tizen Studio (e.g. 4.x/5.0), where Wearable 4.0 was still the default.
 - Write a Tizen **web app** (JS) instead of native C. It would only need the web CLI, which did install.
 
+## Follow-up web research (2026-10-09)
+
+A research pass looked for setups other people have published. Searches covered GitHub, Docker Hub, Stack Overflow, the Samsung Developer Forum (through the Wayback Machine), and Reddit/XDA (through search caches). We found no maintained recipe. The likely final blocker is Samsung's certificate service, not the SDK.
+
+### Samsung watch certificates appear broken (strongest reason to stop)
+- Samsung Developer Forum thread [*"Solution for PKCS#12 error for creating certificates on a Tizen Watch3"*](https://web.archive.org/web/20251007114450/https://forum.developer.samsung.com/t/solution-for-pkcs-12-error-for-creating-cetificates-on-a-tizen-watch3/42338) (archived Oct 2025):
+  - Creating a **watch** author certificate fails with `java.security.KeyStoreException: Key store type should be PKCS12 ...`. This happened with Tizen Studio 6.1 and with the latest Certificate Extension on Linux.
+  - The generated `author.pri` and `author.crt` files are not valid PKCS#12/PEM.
+  - The **TV** certificate flow works for the same user, which points to a server-side problem with the wearable certificates only.
+  - The archive shows no fix.
+- r/GalaxyWatch (Oct 2025), *"Are we doomed with TizenOS watches??? Failing to create new certificates to sideload Tizen apps on the watch"*, reports the same error.
+- The Galaxy Store for Tizen watches is shut down. New downloads stopped on 2025-05-31, and re-downloads stopped on 2025-09-30.
+- Without a Samsung distributor certificate that includes the watch DUID, nothing installs on a Gear S3. So even a working SDK install would very likely have hit a dead end at step 2.
+
+### Docker images and existing setups
+| Image / repo | Last update | Verdict |
+|---|---|---|
+| [`cirocavani/tizen-studio-docker`](https://github.com/cirocavani/tizen-studio-docker) | 2018-06 | Showed WEARABLE-4.0 installing back when it was the current profile. The installer URLs and repo state are from that time and the setup is x86 only. Useful only as a reference. |
+| `dhsshine/tizen-studio` (Docker Hub) | 2020-09 (tag 3.7) | amd64 only; no evidence it includes the wearable profile or certificates |
+| `tuduongquyet/tizen-studio-cli` (Docker Hub) | 2020-02 | Says "SDK 5.5 and 3.0". Stale, amd64 only, no Dockerfile source. |
+| `vitalets/tizen-webos-sdk` (Docker Hub) | 2023-11 | For TVs and webOS, not wearables |
+| TizenBrew / [`hcbille/install-tizenbrew-tizen`](https://github.com/hcbille/install-tizenbrew-tizen) | n/a | Samsung **TVs** only. There is no equivalent for watches. |
+
+None of these is arm64, maintained, or ships the Samsung Certificate Extension in a working state.
+
+### Other alternatives checked
+- **Choosing an older snapshot in the GUI Package Manager:** we found no report confirming that it avoids the forced update to `Tizen_SDK_10.0`. The GUI uses the same backend as the CLI that failed above, so this is unverified.
+- **A newer rootstrap (wearable 5.5/6.0) with `api-version="4.0"`:** we found no public report of this working for native C on a Gear S3. `api-version` doesn't change which libraries the binary links against, so it could fail at runtime on the watch's older libraries.
+- **GBS / building with only a toolchain and rootstrap:** GBS builds platform RPMs, not signed TPKs, so it doesn't solve signing.
+- **Open-source client for Samsung's certificate service:** none exists. Certificate issuance is only available through Samsung's Java Certificate Manager.
+- **Tizen web app (JS):**
+  - HTTPS (`fetch`/XHR) works, and so does TTS through `tizen.tts`.
+  - We found no example of **microphone capture** (`getUserMedia`/`MediaRecorder`) in a wearable web app on Tizen 4.0. Without it, the app would need a native part again.
+  - It also still needs the same Samsung certificate.
+- **Docs:** docs.tizen.org now redirects to samsungtizenos.com, which has no API reference content.
+
 All local artifacts from these attempts (`~/tizen-studio`, `~/tizen-studio-data`, `~/.package-manager`, `~/tizen-mirror`) were removed.
