@@ -27,7 +27,7 @@ Target: Tizen Studio + Wearable 4.0 Native + Samsung Wearable Extension + Samsun
 - Use the 5.6 GUI Package Manager interactively and pick the older snapshot in its Configuration screen.
 - Build with a newer wearable rootstrap and set `api-version="4.0"` in `tizen-manifest.xml`.
 - Use a Linux x86_64 VM or Docker image with an older Tizen Studio (e.g. 4.x/5.0), where Wearable 4.0 was still the default.
-- Write a Tizen **web app** (JS) instead of native C. It would only need the web CLI, which did install.
+- Write a Tizen **web app** (JS) instead of native C. **Not a real way around the blockers** (see "Why a web app doesn't help" below).
 
 ## Follow-up web research (2026-10-09)
 
@@ -59,10 +59,28 @@ None of these is arm64, maintained, or ships the Samsung Certificate Extension i
 - **A newer rootstrap (wearable 5.5/6.0) with `api-version="4.0"`:** we found no public report of this working for native C on a Gear S3. `api-version` doesn't change which libraries the binary links against, so it could fail at runtime on the watch's older libraries.
 - **GBS / building with only a toolchain and rootstrap:** GBS builds platform RPMs, not signed TPKs, so it doesn't solve signing.
 - **Open-source client for Samsung's certificate service:** none exists. Certificate issuance is only available through Samsung's Java Certificate Manager.
-- **Tizen web app (JS):**
-  - HTTPS (`fetch`/XHR) works, and so does TTS through `tizen.tts`.
-  - We found no example of **microphone capture** (`getUserMedia`/`MediaRecorder`) in a wearable web app on Tizen 4.0. Without it, the app would need a native part again.
-  - It also still needs the same Samsung certificate.
+- **Tizen web app (JS):** see the next section.
 - **Docs:** docs.tizen.org now redirects to samsungtizenos.com, which has no API reference content.
+
+### Why a web app doesn't help
+A Tizen web app (HTML/JS packaged as a `.wgt`) looked like a way around the missing Wearable 4.0 *Native* packages. The Wearable 4.0 *Web* development CLI did install in attempt #3. We found no evidence that a web app would work.
+
+**What supports it:**
+- The `WEARABLE-4.0-WebAppDevelopment-CLI` package installed fine.
+- HTTPS POST to Gemini with `fetch`/XHR is routine. It needs only the `http://tizen.org/privilege/internet` privilege and an access policy in `config.xml`.
+- Speech output may be possible through a Tizen JS speech API. We did not confirm this on Tizen 4.0.
+
+**What argues against it:**
+- **Microphone capture:**
+  - We found no example of a Tizen 4.0 wearable web app recording audio with `getUserMedia`/`MediaRecorder`.
+  - Tizen's JS device APIs don't appear to include an audio recorder.
+  - Without recording, the app would need a native service component. That brings back the Wearable 4.0 Native SDK we couldn't install.
+- **Signing:**
+  - Web apps also need a Samsung author certificate and a distributor certificate that includes the watch DUID before they install on a Gear S3.
+  - Creating watch certificates is the step reported broken since Oct 2025.
+  - So a web app runs into the same final blocker as the native app.
+- **Docs:** docs.tizen.org no longer serves the API reference, so we couldn't check which web APIs exist on Tizen 4.0.
+
+**Verdict:** a web app does not get around the problem. Its core feature (microphone capture) is unproven, and it still depends on the Samsung watch certificate service, which is reported broken.
 
 All local artifacts from these attempts (`~/tizen-studio`, `~/tizen-studio-data`, `~/.package-manager`, `~/tizen-mirror`) were removed.
